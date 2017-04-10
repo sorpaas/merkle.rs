@@ -1,17 +1,20 @@
 [package]
-name    = "merkle"
-version = "1.1.1-pre"
+name    = "merkle-sha3"
+version = "0.1.0"
 authors = [
   "Frederic Jacobs <me@fredericjacobs.com>",
   "Dylan Bourgeois <dtsbourg@gmail.com>",
-  "Romain Ruetschi <romain.ruetschi@gmail.com>"
+  "Romain Ruetschi <romain.ruetschi@gmail.com>",
+  "Wei Tang <hi@that.world>"
 ]
 
-description   = "Merkle is a Rust implementation of a Merkle tree with support for generation of inclusion proofs."
+description   = "Sha3-Merkle is a fork of merkle.rs, a Merkle tree with support for generation of inclusion proofs, in sha3."
 license       = "BSD-3-Clause"
-documentation = "https://spinresearch.github.io/merkle.rs/merkle/index.html"
-homepage      = "https://github.com/SpinResearch/merkle.rs"
-repository    = "https://github.com/SpinResearch/merkle.rs"
+homepage      = "https://github.com/sorpaas/merkle.rs"
+repository    = "https://github.com/sorpaas/merkle.rs"
+
+[lib]
+name = "merkle"
 
 [dependencies]
 rust-crypto = "^0.2"
