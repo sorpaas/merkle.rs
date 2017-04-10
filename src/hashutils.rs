@@ -53,24 +53,29 @@ pub trait HashUtils<U: AsRef<[u8]>> {
     fn hash_nodes<T>(self, left: &T, right: &T) -> U where T: Hashable;
 }
 
-// impl HashUtils for Algorithm {
+impl<H: From<[u8; 32]> + AsRef<[u8]>> HashUtils<H> for Sha3 {
+    fn hash_empty(mut self) -> H {
+        let mut r: [u8; 32] = [0u8; 32];
+        self.reset();
+        self.input(&[]);
+        self.result(&mut r);
+        r.into()
+    }
 
-//     fn hash_empty(&'static self) -> Digest {
-//         digest(self, &[])
-//     }
+    fn hash_leaf<T>(mut self, bytes: &T) -> H where T: Hashable {
+        let mut r: [u8; 32] = [0u8; 32];
+        self.reset();
+        bytes.update_context(&mut self);
+        self.result(&mut r);
+        r.into()
+    }
 
-//     fn hash_leaf<T>(&'static self, leaf: &T) -> Digest where T: Hashable {
-//         let mut ctx = Context::new(self);
-//         ctx.update(&[0x00]);
-//         leaf.update_context(&mut ctx);
-//         ctx.finish()
-//     }
-
-//     fn hash_nodes<T>(&'static self, left: &T, right: &T) -> Digest where T: Hashable {
-//         let mut ctx = Context::new(self);
-//         ctx.update(&[0x01]);
-//         left.update_context(&mut ctx);
-//         right.update_context(&mut ctx);
-//         ctx.finish()
-//     }
-// }
+    fn hash_nodes<T>(mut self, left: &T, right: &T) -> H where T: Hashable {
+        let mut r: [u8; 32] = [0u8; 32];
+        self.reset();
+        left.update_context(&mut self);
+        right.update_context(&mut self);
+        self.result(&mut r);
+        r.into()
+    }
+}
