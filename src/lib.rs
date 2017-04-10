@@ -1,6 +1,6 @@
 #![deny(
     missing_docs, unused_qualifications,
-    missing_debug_implementations, missing_copy_implementations,
+    missing_copy_implementations,
     trivial_casts, trivial_numeric_casts,
     unsafe_code, unstable_features,
     unused_import_braces
@@ -8,7 +8,7 @@
 
 //! *merkle* implements a Merkle Tree in Rust.
 
-extern crate ring;
+extern crate crypto;
 
 #[cfg(feature = "serialization-protobuf")]
 extern crate protobuf;

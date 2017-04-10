@@ -1,5 +1,4 @@
-
-use ring::digest::{ Algorithm, Digest };
+use crypto::sha3::Sha3;
 
 use hashutils::{ Hashable, HashUtils };
 
@@ -31,14 +30,16 @@ pub enum Tree<T> {
 impl <T> Tree<T> {
 
     /// Create an empty tree
-    pub fn empty(hash: Digest) -> Self {
+    pub fn empty<H>(hash: H) -> Self
+        where H: AsRef<[u8]> {
         Tree::Empty {
             hash: hash.as_ref().into()
         }
     }
 
     /// Create a new tree
-    pub fn new(hash: Digest, value: T) -> Self {
+    pub fn new<H>(hash: H, value: T) -> Self
+        where H: AsRef<[u8]> {
         Tree::Leaf {
             hash: hash.as_ref().into(),
             value: value
@@ -46,8 +47,8 @@ impl <T> Tree<T> {
     }
 
     /// Create a new leaf
-    pub fn new_leaf(algo: &'static Algorithm, value: T) -> Tree<T>
-            where T: Hashable {
+    pub fn new_leaf<H>(algo: Sha3, value: T) -> Tree<T>
+            where T: Hashable, Sha3: HashUtils<H>, H: AsRef<[u8]> {
 
         let hash = algo.hash_leaf(&value);
         Tree::new(hash, value)

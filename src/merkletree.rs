@@ -1,5 +1,4 @@
-
-use ring::digest::Algorithm;
+use crypto::sha3::Sha3;
 
 use tree::{ Tree, LeavesIterator, LeavesIntoIterator };
 use hashutils::{ Hashable, HashUtils };
@@ -8,11 +7,11 @@ use proof::{ Proof, Lemma };
 
 /// A Merkle tree is a binary tree, with values of type `T` at the leafs,
 /// and where every internal node holds the hash of the concatenation of the hashes of its children nodes.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct MerkleTree<T> {
 
     /// The hashing algorithm used by this Merkle tree
-    pub algorithm: &'static Algorithm,
+    pub algorithm: Sha3,
 
     /// The root of the inner binary tree
     root: Tree<T>,
@@ -28,8 +27,8 @@ impl <T> MerkleTree<T> {
 
     /// Constructs a Merkle Tree from a vector of data blocks.
     /// Returns `None` if `values` is empty.
-    pub fn from_vec(algorithm: &'static Algorithm, values: Vec<T>) -> Self
-            where T: Hashable {
+    pub fn from_vec<H>(algorithm: Sha3, values: Vec<T>) -> Self
+        where T: Hashable, Sha3: HashUtils<H>, H: AsRef<[u8]> {
 
         if values.is_empty() {
             return MerkleTree {
@@ -113,8 +112,8 @@ impl <T> MerkleTree<T> {
 
     /// Generate an inclusion proof for the given value.
     /// Returns `None` if the given value is not found in the tree.
-    pub fn gen_proof(&self, value: T) -> Option<Proof<T>>
-            where T: Hashable {
+    pub fn gen_proof<H>(&self, value: T) -> Option<Proof<T>>
+        where T: Hashable, Sha3: HashUtils<H>, H: AsRef<[u8]> {
 
         let root_hash  = self.root_hash().clone();
         let leaf_hash  = self.algorithm.hash_leaf(&value);

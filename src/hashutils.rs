@@ -1,5 +1,5 @@
-
-use ring::digest::{ Algorithm, Context, Digest, digest };
+use crypto::sha3::Sha3;
+use crypto::digest::Digest;
 
 /// The type of values stored in a `MerkleTree` must implement
 /// this trait, in order for them to be able to be fed
@@ -26,52 +26,51 @@ pub trait Hashable {
     /// Update the given `context` with `self`.
     ///
     /// See `ring::digest::Context::update` for more information.
-    fn update_context(&self, context: &mut Context);
+    fn update_context(&self, context: &mut Sha3);
 
 }
 
 impl <T: AsRef<[u8]>> Hashable for T {
 
-    fn update_context(&self, context: &mut Context) {
-        context.update(self.as_ref());
+    fn update_context(&self, context: &mut Sha3) {
+        context.input(self.as_ref());
     }
 }
 
 /// The sole purpose of this trait is to extend the standard
 /// `ring::algo::Algorithm` type with a couple utility functions.
-pub trait HashUtils {
+pub trait HashUtils<U: AsRef<[u8]>> {
 
     /// Compute the hash of the empty string
-    fn hash_empty(&'static self) -> Digest;
+    fn hash_empty(self) -> U;
 
     /// Compute the hash of the given leaf
-    fn hash_leaf<T>(&'static self, bytes: &T) -> Digest where T: Hashable;
+    fn hash_leaf<T>(self, bytes: &T) -> U where T: Hashable;
 
     /// Compute the hash of the concatenation of `left` and `right`.
     // XXX: This is overly generic temporarily to make refactoring easier.
     // TODO: Give `left` and `right` type &Digest.
-    fn hash_nodes<T>(&'static self, left: &T, right: &T) -> Digest where T: Hashable;
+    fn hash_nodes<T>(self, left: &T, right: &T) -> U where T: Hashable;
 }
 
-impl HashUtils for Algorithm {
+// impl HashUtils for Algorithm {
 
-    fn hash_empty(&'static self) -> Digest {
-        digest(self, &[])
-    }
+//     fn hash_empty(&'static self) -> Digest {
+//         digest(self, &[])
+//     }
 
-    fn hash_leaf<T>(&'static self, leaf: &T) -> Digest where T: Hashable {
-        let mut ctx = Context::new(self);
-        ctx.update(&[0x00]);
-        leaf.update_context(&mut ctx);
-        ctx.finish()
-    }
+//     fn hash_leaf<T>(&'static self, leaf: &T) -> Digest where T: Hashable {
+//         let mut ctx = Context::new(self);
+//         ctx.update(&[0x00]);
+//         leaf.update_context(&mut ctx);
+//         ctx.finish()
+//     }
 
-    fn hash_nodes<T>(&'static self, left: &T, right: &T) -> Digest where T: Hashable {
-        let mut ctx = Context::new(self);
-        ctx.update(&[0x01]);
-        left.update_context(&mut ctx);
-        right.update_context(&mut ctx);
-        ctx.finish()
-    }
-}
-
+//     fn hash_nodes<T>(&'static self, left: &T, right: &T) -> Digest where T: Hashable {
+//         let mut ctx = Context::new(self);
+//         ctx.update(&[0x01]);
+//         left.update_context(&mut ctx);
+//         right.update_context(&mut ctx);
+//         ctx.finish()
+//     }
+// }

@@ -1,16 +1,15 @@
-
-use ring::digest::Algorithm;
+use crypto::sha3::Sha3;
 
 use tree::Tree;
 use hashutils::HashUtils;
 
 /// An inclusion proof represent the fact that a `value` is a member
 /// of a `MerkleTree` with root hash `root_hash`, and hash function `algorithm`.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Proof<T> {
 
     /// The hashing algorithm used in the original `MerkleTree`
-    pub algorithm: &'static Algorithm,
+    pub algorithm: Sha3,
 
     /// The hash of the root of the original `MerkleTree`
     pub root_hash: Vec<u8>,
@@ -25,7 +24,7 @@ pub struct Proof<T> {
 impl <T> Proof<T> {
 
     /// Constructs a new `Proof`
-    pub fn new(algo: &'static Algorithm, root_hash: Vec<u8>, lemma: Lemma, value: T) -> Self {
+    pub fn new(algo: Sha3, root_hash: Vec<u8>, lemma: Lemma, value: T) -> Self {
         Proof {
             algorithm: algo,
             root_hash: root_hash,
@@ -36,7 +35,8 @@ impl <T> Proof<T> {
 
     /// Checks whether this inclusion proof is well-formed,
     /// and whether its root hash matches the given `root_hash`.
-    pub fn validate(&self, root_hash: &[u8]) -> bool {
+    pub fn validate<H>(&self, root_hash: &[u8]) -> bool
+        where Sha3: HashUtils<H>, H: AsRef<[u8]> {
         if self.root_hash != root_hash || self.lemma.node_hash != root_hash {
             return false
         }
@@ -44,7 +44,8 @@ impl <T> Proof<T> {
         self.validate_lemma(&self.lemma)
     }
 
-    fn validate_lemma(&self, lemma: &Lemma) -> bool {
+    fn validate_lemma<H>(&self, lemma: &Lemma) -> bool
+        where Sha3: HashUtils<H>, H: AsRef<[u8]> {
         match lemma.sub_lemma {
 
             None =>
